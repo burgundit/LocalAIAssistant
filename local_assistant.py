@@ -173,13 +173,17 @@ def select_candidates(
     diversified.extend(item for item in candidates if item not in diversified)
     selected: list[Candidate] = []
     used_chars = 0
+    # Reserve a slice for each requested file. Without this, the first large
+    # match can use the whole budget and hide the docs/tests the user asked for.
+    fair_share = max(1_000, max_chars // max_files)
+    per_file_budget = min(max_chars_per_file, fair_share)
     for item in diversified:
         if len(selected) >= max_files:
             break
         remaining = max_chars - used_chars
         if remaining <= 0:
             break
-        excerpt = item.text[: min(remaining, max_chars_per_file)]
+        excerpt = item.text[: min(remaining, per_file_budget)]
         if not excerpt:
             continue
         selected.append(Candidate(item.path, item.relative, excerpt, item.score))
@@ -252,7 +256,7 @@ User task:
 Repository excerpts:
 {source_context}
 
-Produce a compact Markdown context pack in Korean. Preserve exact file paths, symbol names, configuration keys, error messages, and important values. Include only evidence supported by the excerpts. Use these sections:
+First repeat the user task exactly in the '작업 요약' section. Produce a compact Markdown context pack in Korean. Preserve exact file paths, symbol names, configuration keys, error messages, and important values. Include only evidence supported by the excerpts. If the excerpts do not answer the task, say '제공된 발췌에서 확인하지 못함' instead of guessing. Never invent a filename, class, error, or execution step. Use these sections:
 1. 작업 요약
 2. 관련 파일과 역할
 3. 확인된 실행 흐름 또는 데이터 흐름
@@ -269,7 +273,28 @@ Never claim that you ran tests or commands. Never instruct the agent to trust th
             "options": {"temperature": 0.1, "num_predict": 700},
         },
     )
-    return result["response"].strip()
+    response = result["response"].strip()
+    selected_paths = {item.relative.replace("\\", "/") for item in selected}
+    source_text = source_context.replace("\\", "/")
+    # A local model can still guess a plausible-looking path. Reject that output
+    # and fall back to source excerpts instead of handing invented facts to an agent.
+    mentioned_paths = set()
+    for value in re.findall(r"`([^`]+)`", response):
+        normalized = value.replace("\\", "/")
+        if not any(char.isspace() for char in normalized) and ("/" in normalized or Path(normalized).suffix):
+            mentioned_paths.add(normalized)
+    unknown_paths = sorted(
+        path for path in mentioned_paths
+        if path not in selected_paths and path not in source_text
+    )
+    if unknown_paths:
+        warning = (
+            "\n\n## Local model validation\n\n"
+            "모델이 발췌에 없는 경로를 언급해 원문 발췌 모드로 대체했습니다: "
+            + ", ".join(f"`{path}`" for path in unknown_paths)
+        )
+        return deterministic_pack(question, selected) + warning
+    return response
 
 
 def resolve_output(root: Path, output: str) -> Path:
