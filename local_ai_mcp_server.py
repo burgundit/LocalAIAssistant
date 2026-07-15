@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""MCP server that exposes LocalAIAssistant's Ollama-backed helpers to Claude Code.
+"""Lumi MCP server that exposes the local Ollama helpers to Claude Code.
 
 Register this as a project MCP server (see .mcp.json) so Claude Code can call
 the local model directly for simple, self-contained work instead of spending
@@ -16,12 +16,12 @@ from mcp.server.fastmcp import FastMCP
 
 import local_assistant as la
 
-mcp = FastMCP("local-ai-assistant")
+mcp = FastMCP("lumi")
 
 
 @mcp.tool()
 def local_ai_doctor(model: str = la.DEFAULTS["model"]) -> str:
-    """Check whether the local Ollama server is reachable and whether `model` is installed.
+    """Lumi: check whether Ollama is reachable and whether `model` is installed.
 
     Call this if a local_ai_ask or local_ai_pack call fails, to see whether
     Ollama needs to be started (`ollama serve`) or the model needs to be
@@ -42,7 +42,7 @@ def local_ai_doctor(model: str = la.DEFAULTS["model"]) -> str:
 
 @mcp.tool()
 def local_ai_ask(question: str, model: str = la.DEFAULTS["model"]) -> str:
-    """Answer a short, self-contained question directly with the local Ollama model.
+    """Lumi: answer a short, self-contained question with local Ollama.
 
     Use this for simple work that does not need the current repository's
     files: quick explanations, syntax/API questions, wording or format
@@ -75,7 +75,7 @@ def local_ai_pack(
     max_chars: int | None = None,
     no_model: bool = False,
 ) -> str:
-    """Scan a project locally and return a compact, evidence-based context pack.
+    """Lumi: scan a project locally and return a compact evidence-based pack.
 
     Ranks the repository's files against `question`, then has the local
     Ollama model (or, if no_model=True, raw excerpts) summarize only the

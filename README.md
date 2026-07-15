@@ -1,5 +1,9 @@
 # Lumi (루미) for Codex & Claude Code
 
+**LUMI = Local Understanding & Model Interface**
+
+로컬에서 프로젝트를 먼저 이해하고, 필요한 내용만 코딩 에이전트에 연결한다는 뜻입니다.
+
 > Ollama를 이용해 프로젝트를 먼저 정리하고, Codex나 Claude Code에는 필요한 내용만 넘기는 작은 도구입니다.
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
