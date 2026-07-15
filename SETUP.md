@@ -35,7 +35,20 @@ python local_assistant.py doctor
 
 `Ollama API: 정상`과 `qwen2.5-coder:7b: 준비됨`이 나오면 준비가 끝난 것입니다.
 
-## 3. 권장 방식: Codex·Claude Code에 요약 팩 붙여 넣기
+## 3. PC 사양에 맞추기
+
+처음에는 아래 표의 모델과 제한값을 그대로 사용하면 됩니다.
+
+| PC | 모델 | 명령에 추가할 값 |
+| --- | --- | --- |
+| RAM 16GB, GPU 없음 | `qwen2.5-coder:3b` | `--max-files 6 --max-chars 30000` |
+| VRAM 6–8GB | `qwen2.5-coder:7b` | `--max-files 10 --max-chars 50000` |
+| VRAM 10–12GB, RAM 32GB | `qwen2.5-coder:7b` | 기본값 |
+| VRAM 16GB 이상, RAM 32GB 이상 | `qwen2.5-coder:14b` | 모델별 컨텍스트 한도 확인 |
+
+CPU 전용 PC는 첫 응답이 느릴 수 있습니다. 먼저 `--no-model`로 파일 선택이 맞는지 확인한 다음, 질문과 파일 수를 줄여 실행하세요. 14B 모델이 느리거나 메모리를 많이 사용하면 7B 모델로 내리면 됩니다.
+
+## 4. 권장 방식: Codex·Claude Code에 요약 팩 붙여 넣기
 
 이 방식은 Codex와 Claude Code의 원래 기능·로그인·도구를 유지하면서, 반복적인 저장소 탐색 컨텍스트만 줄입니다.
 
@@ -95,7 +108,7 @@ claude
 
 LocalAIAssistant로 팩을 만든 뒤 Claude Code에 붙여 넣는 과정은 Codex와 같습니다.
 
-## 4. 선택 방식: 에이전트 자체를 Ollama 로컬 모델로 실행
+## 5. 선택 방식: 에이전트 자체를 Ollama 로컬 모델로 실행
 
 이 방식은 Codex/Claude Code의 클라우드 모델 대신 Ollama 모델을 사용합니다. 비용은 줄일 수 있지만 모델 성능, 긴 컨텍스트, 도구 호환성이 달라질 수 있으므로 처음에는 3번의 요약 팩 방식을 권장합니다.
 
@@ -117,7 +130,7 @@ ollama launch codex --config
 
 Ollama 통합은 코딩 에이전트에 큰 컨텍스트를 요구할 수 있습니다. 모델을 직접 연결할 때는 Ollama 공식 통합 문서의 컨텍스트 길이와 지원 모델을 확인하세요.
 
-## 5. 매일 쓰는 명령
+## 6. 매일 쓰는 명령
 
 ```powershell
 # Ollama와 모델 상태 확인
@@ -136,7 +149,7 @@ C:\path\to\LocalAIAssistant\Ask-LocalAssistant.ps1 `
   -NoModel
 ```
 
-## 6. 문제 해결
+## 7. 문제 해결
 
 ### `ollama`를 찾을 수 없음
 
