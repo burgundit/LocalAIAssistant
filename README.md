@@ -1,4 +1,4 @@
-# Local AI Assistant for Codex & Claude Code
+# Lumi (루미) for Codex & Claude Code
 
 > Ollama를 이용해 프로젝트를 먼저 정리하고, Codex나 Claude Code에는 필요한 내용만 넘기는 작은 도구입니다.
 
@@ -6,11 +6,11 @@
 [![Ollama](https://img.shields.io/badge/Ollama-local_AI-black)](https://ollama.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**LocalAIAssistant**는 프로젝트 폴더를 훑어 질문과 관련 있는 코드·테스트·문서만 골라 줍니다. Ollama가 그 내용을 짧게 정리하면, 그 결과를 Codex나 Claude Code에 붙여 넣어 작업을 이어갈 수 있습니다. 별도 서버나 API 키 없이 Windows PowerShell에서 실행합니다.
+**Lumi(루미)**는 프로젝트 폴더를 훑어 질문과 관련 있는 코드·테스트·문서만 골라 줍니다. Ollama가 그 내용을 짧게 정리하면, 그 결과를 Codex나 Claude Code에 붙여 넣어 작업을 이어갈 수 있습니다. 별도 서버나 API 키 없이 Windows PowerShell에서 실행합니다. 저장소 이름은 검색을 위해 `LocalAIAssistant`로 유지합니다.
 
 English: A small Windows tool that finds the relevant files in a project, summarizes them with Ollama, and prepares a short handoff for Codex or Claude Code.
 
-설치와 Codex·Claude Code 연결을 처음부터 따라 하려면 [SETUP.md](SETUP.md)를 보세요.
+설치와 Codex·Claude Code 연결을 처음부터 따라 하려면 [SETUP.md](SETUP.md)를 보세요. 터미널에서는 `lumi`라고 부르면 됩니다.
 
 ## 이런 분에게 적합합니다
 
@@ -45,6 +45,12 @@ cd LocalAIAssistant
   -Question "로그인 오류의 원인과 확인할 테스트를 요약해줘" `
   -Path C:\path\to\your-project `
   -Copy
+```
+
+PowerShell 프로필을 설정한 뒤에는 더 짧게 쓸 수 있습니다.
+
+```powershell
+lumi -Question "로그인 오류와 관련된 파일을 찾아줘" -Path C:\path\to\project -Copy
 ```
 
 생성된 요약은 `.local-ai\context-pack.md`에 저장되고 클립보드에도 복사됩니다. Codex나 Claude Code 채팅에 붙여 넣으면 됩니다.

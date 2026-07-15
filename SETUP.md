@@ -1,6 +1,6 @@
 # Codex·Claude Code 연동 설치 가이드
 
-이 문서는 Windows 초보자가 LocalAIAssistant를 설치하고 Codex 또는 Claude Code와 함께 사용하는 순서입니다.
+이 문서는 Windows 초보자가 **Lumi(루미)**를 설치하고 Codex 또는 Claude Code와 함께 사용하는 순서입니다. GitHub 저장소 이름은 검색을 위해 `LocalAIAssistant`로 유지됩니다.
 
 ## 1. 공통 준비
 
@@ -25,7 +25,7 @@ ollama pull qwen2.5-coder:7b
 ollama list
 ```
 
-## 2. LocalAIAssistant 설치
+## 2. Lumi 설치
 
 ```powershell
 git clone https://github.com/burgundit/LocalAIAssistant.git
@@ -106,7 +106,7 @@ cd C:\path\to\your-project
 claude
 ```
 
-LocalAIAssistant로 팩을 만든 뒤 Claude Code에 붙여 넣는 과정은 Codex와 같습니다.
+Lumi로 팩을 만든 뒤 Claude Code에 붙여 넣는 과정은 Codex와 같습니다.
 
 ## 5. 선택 방식: 에이전트 자체를 Ollama 로컬 모델로 실행
 
