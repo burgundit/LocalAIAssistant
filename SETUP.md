@@ -2,6 +2,8 @@
 
 이 문서는 Windows 초보자가 **Lumi(루미)**를 설치하고 Codex 또는 Claude Code와 함께 사용하는 순서입니다. GitHub 저장소 이름은 검색을 위해 `LocalAIAssistant`로 유지됩니다.
 
+LUMI는 **Local Understanding & Model Interface**의 약자입니다. 로컬에서 프로젝트를 읽고 필요한 정보만 Codex와 Claude Code에 연결합니다.
+
 ## 1. 공통 준비
 
 PowerShell을 새로 열고 다음 명령으로 준비 상태를 확인합니다.
@@ -107,6 +109,51 @@ claude
 ```
 
 Lumi로 팩을 만든 뒤 Claude Code에 붙여 넣는 과정은 Codex와 같습니다.
+
+### Claude Code 자동 연동 (MCP 서버, 권장)
+
+매번 명령을 실행하고 복사·붙여넣기를 하지 않으려면, LocalAIAssistant를 MCP 서버로 등록해서
+Claude Code가 필요할 때 로컬 Ollama를 직접 호출하게 만들 수 있습니다.
+
+```powershell
+pip install -r C:\path\to\LocalAIAssistant\requirements.txt
+```
+
+작업할 프로젝트 폴더 최상위에 `.mcp.json`을 만들거나, 이미 있다면 `mcpServers`에 아래 항목을 추가합니다.
+
+```json
+{
+  "mcpServers": {
+    "local-ai-assistant": {
+      "command": "python",
+      "args": ["C:\\path\\to\\LocalAIAssistant\\local_ai_mcp_server.py"]
+    }
+  }
+}
+```
+
+`C:\path\to\LocalAIAssistant`는 실제로 이 저장소를 내려받은 경로로 바꿉니다. 이후 해당 프로젝트에서
+`claude`를 실행하면 다음 세 가지 도구를 Claude Code가 직접 호출할 수 있습니다.
+
+- `local_ai_doctor`: Ollama 연결과 모델 설치 상태 확인
+- `local_ai_ask`: 저장소 파일이 필요 없는 간단한 질문(설명, 문법, 형식 변환 등)에 로컬 모델이 바로 답변
+- `local_ai_pack`: 질문과 관련된 파일만 골라 로컬 모델이 요약한 컨텍스트 팩을 반환
+
+Claude Code는 각 도구의 설명을 읽고 언제 사용할지 스스로 판단합니다. 단순 조회·설명처럼 저장소
+탐색이 필요 없는 작업은 `local_ai_ask`로 로컬에서 끝내고, 저장소 근거가 필요한 질문에는 먼저
+`local_ai_pack`으로 관련 파일을 좁힌 뒤 답하도록 유도하려면, 작업 중인 프로젝트의 `CLAUDE.md`에
+다음과 같이 적어 두는 것을 권장합니다.
+
+```markdown
+## 로컬 AI 도구
+
+- 저장소 파일이 필요 없는 간단한 질문/설명/형식 변환은 local_ai_ask를 먼저 사용하세요.
+- 저장소 근거가 필요한 질문은 local_ai_pack으로 관련 파일을 좁힌 뒤 답하세요.
+- 위 도구 호출이 실패하면 local_ai_doctor로 원인을 확인하세요.
+```
+
+파일 수정·Git 작업·테스트 실행은 여전히 Claude Code가 직접 수행합니다. 이 도구들은 탐색과
+요약만 로컬로 옮길 뿐입니다.
 
 ## 5. 선택 방식: 에이전트 자체를 Ollama 로컬 모델로 실행
 

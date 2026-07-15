@@ -2,7 +2,15 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from local_assistant import cache_key, estimate_tokens, is_text_file, load_config, query_terms, select_candidates
+from local_assistant import (
+    cache_key,
+    estimate_tokens,
+    generate_pack,
+    is_text_file,
+    load_config,
+    query_terms,
+    select_candidates,
+)
 
 
 class LocalAssistantTests(unittest.TestCase):
@@ -50,6 +58,30 @@ class LocalAssistantTests(unittest.TestCase):
             root = Path(directory)
             (root / ".localassistant.json").write_text('{"max_files": 4}', encoding="utf-8")
             self.assertEqual(load_config(root)["max_files"], 4)
+
+    def test_generate_pack_without_model_returns_deterministic_content(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Wave.cs").write_text("class Wave {}", encoding="utf-8")
+            pack = generate_pack(
+                root, "wave", "unused-model", ".local-ai/context-pack.md",
+                max_files=5, max_chars=10_000, max_chars_per_file=5_000,
+                max_file_bytes=100_000, no_model=True, no_cache=True,
+            )
+            self.assertIn("Wave.cs", pack.content)
+            self.assertIn("Evidence index", pack.content)
+            self.assertTrue(pack.output_path.is_file())
+            self.assertFalse(pack.used_model)
+
+    def test_generate_pack_raises_when_no_files_match(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaises(LookupError):
+                generate_pack(
+                    root, "nothing here", "unused-model", ".local-ai/context-pack.md",
+                    max_files=5, max_chars=10_000, max_chars_per_file=5_000,
+                    max_file_bytes=100_000, no_model=True, no_cache=True,
+                )
 
     def test_cache_key_changes_when_source_changes(self):
         with tempfile.TemporaryDirectory() as directory:

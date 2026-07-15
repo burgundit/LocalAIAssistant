@@ -1,5 +1,9 @@
 # Lumi (루미) for Codex & Claude Code
 
+**LUMI = Local Understanding & Model Interface**
+
+로컬에서 프로젝트를 먼저 이해하고, 필요한 내용만 코딩 에이전트에 연결한다는 뜻입니다.
+
 > Ollama를 이용해 프로젝트를 먼저 정리하고, Codex나 Claude Code에는 필요한 내용만 넘기는 작은 도구입니다.
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -11,6 +15,13 @@
 English: A small Windows tool that finds the relevant files in a project, summarizes them with Ollama, and prepares a short handoff for Codex or Claude Code.
 
 설치와 Codex·Claude Code 연결을 처음부터 따라 하려면 [SETUP.md](SETUP.md)를 보세요. 터미널에서는 `lumi`라고 부르면 됩니다.
+
+PowerShell 프로필을 설정하면 `lumi`라고 짧게 호출할 수 있습니다.
+
+Claude Code와는 복사·붙여넣기 없이 MCP 서버(`local_ai_mcp_server.py`)로 바로 연동할 수도 있습니다.
+등록해 두면 저장소 파일이 필요 없는 간단한 질문은 Claude Code가 로컬 Ollama에 바로 위임하고,
+저장소 근거가 필요한 질문만 컨텍스트 팩을 거쳐 처리합니다. 자세한 설정은 [SETUP.md](SETUP.md)의
+"Claude Code 자동 연동" 절을 참고하세요.
 
 ## 이런 분에게 적합합니다
 
@@ -133,9 +144,12 @@ ollama pull qwen2.5-coder:7b
 ### 파일별 역할
 
 - `local_assistant.py`: 파일 검색, 관련도 계산, Ollama 호출, 요약·캐시 생성
+- `local_ai_mcp_server.py`: 같은 기능을 MCP 도구(`local_ai_ask`, `local_ai_pack`, `local_ai_doctor`)로 Claude Code에 노출
+- `.mcp.json`: 이 저장소 안에서 바로 MCP 서버를 등록해 볼 수 있는 예시 설정
 - `Ask-LocalAssistant.ps1`: 초보자가 PowerShell에서 질문을 입력하는 실행 래퍼
 - `Start-LocalAssistant.ps1`: Python·Ollama 연결과 모델 설치 상태 점검
 - `.localassistant.example.json`: 프로젝트별 파일 수·컨텍스트 크기 설정 예시
+- `requirements.txt`: MCP 서버 실행에 필요한 Python 패키지 목록
 - `test_local_assistant.py`: 검색, 보안 제외, 캐시 키 등 핵심 동작 테스트
 
 ## 명령 예시

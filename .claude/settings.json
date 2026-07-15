@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__local-ai-assistant__local_ai_ask",
+      "mcp__local-ai-assistant__local_ai_pack",
+      "mcp__local-ai-assistant__local_ai_doctor"
+    ]
+  }
+}
