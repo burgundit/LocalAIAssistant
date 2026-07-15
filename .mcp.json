@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "local-ai-assistant": {
+      "command": "python",
+      "args": ["local_ai_mcp_server.py"]
+    }
+  }
+}
