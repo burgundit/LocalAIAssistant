@@ -5,7 +5,10 @@ param(
     [string]$Output = '.local-ai\context-pack.md',
     [switch]$NoModel,
     [switch]$NoCache,
-    [switch]$Copy
+    [switch]$Copy,
+    [int]$MaxFiles,
+    [int]$MaxChars,
+    [int]$MaxCharsPerFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,6 +30,15 @@ if ($NoCache) {
 }
 if ($Copy) {
     $arguments += '--copy'
+}
+if ($MaxFiles -gt 0) {
+    $arguments += @('--max-files', $MaxFiles)
+}
+if ($MaxChars -gt 0) {
+    $arguments += @('--max-chars', $MaxChars)
+}
+if ($MaxCharsPerFile -gt 0) {
+    $arguments += @('--max-chars-per-file', $MaxCharsPerFile)
 }
 
 python @arguments

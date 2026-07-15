@@ -1,14 +1,14 @@
 # Local AI Assistant for Codex & Claude Code
 
-> 초보자를 위한 무료 로컬 AI 코딩 도우미 — Ollama로 Codex·Claude Code 입력 토큰과 비용을 줄여보세요.
+> Ollama를 이용해 프로젝트를 먼저 정리하고, Codex나 Claude Code에는 필요한 내용만 넘기는 작은 도구입니다.
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Ollama](https://img.shields.io/badge/Ollama-local_AI-black)](https://ollama.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**LocalAIAssistant**는 전체 코드 저장소를 Codex나 Claude Code에 그대로 보내는 대신, 무료 로컬 AI 모델이 관련 파일을 먼저 찾고 짧게 압축하는 오픈소스 도구입니다. 복잡한 RAG 설정이나 유료 API 키 없이 Windows PowerShell에서 시작할 수 있습니다.
+**LocalAIAssistant**는 프로젝트 폴더를 훑어 질문과 관련 있는 코드·테스트·문서만 골라 줍니다. Ollama가 그 내용을 짧게 정리하면, 그 결과를 Codex나 Claude Code에 붙여 넣어 작업을 이어갈 수 있습니다. 별도 서버나 API 키 없이 Windows PowerShell에서 실행합니다.
 
-English: A beginner-friendly local AI context compressor for Ollama, Codex, and Claude Code. It selects relevant repository files, summarizes them locally, and creates a compact prompt to reduce cloud AI input tokens.
+English: A small Windows tool that finds the relevant files in a project, summarizes them with Ollama, and prepares a short handoff for Codex or Claude Code.
 
 설치와 Codex·Claude Code 연결을 처음부터 따라 하려면 [SETUP.md](SETUP.md)를 보세요.
 
@@ -19,7 +19,7 @@ English: A beginner-friendly local AI context compressor for Ollama, Codex, and 
 - 로컬 AI 코딩 도우미를 복잡한 서버 없이 사용하고 싶은 분
 - 큰 프로젝트에서 관련 파일만 골라 AI에게 전달하고 싶은 분
 
-전체 파일을 클라우드 AI에 보내지 않으므로 반복적인 코드 탐색과 요약은 내 PC에서 처리됩니다. 최종 수정과 테스트 판단은 Codex 또는 Claude Code에 맡길 수 있습니다.
+파일 탐색과 첫 요약은 내 PC에서 처리합니다. 최종 수정과 테스트 판단은 평소 쓰던 Codex 또는 Claude Code에서 진행하면 됩니다.
 
 ## 3분 만에 시작하기
 
@@ -63,7 +63,7 @@ cd LocalAIAssistant
 Codex / Claude Code에 전달
 ```
 
-실제 261개 파일 프로젝트 검증에서는 약 425,047 추정 토큰의 전체 후보를 검색하여 30,925 토큰만 로컬 모델에 전달했고, 최종 클라우드 AI용 팩은 약 425 토큰으로 압축됐습니다. 토큰 수는 문자 기반 추정치이며 실제 서비스 청구량과는 다를 수 있습니다.
+261개 파일 프로젝트에서 전체 후보를 훑은 뒤 7개 파일만 골랐고, 최종 팩은 약 425 추정 토큰이었습니다. 수치는 문자 수를 바탕으로 한 대략적인 비교값입니다.
 
 ## 권장 환경과 모델
 
@@ -73,6 +73,26 @@ Codex / Claude Code에 전달
 - 첫 모델: `qwen2.5-coder:7b`
 
 RTX 5070 12GB에서는 7B 모델이 속도와 품질의 균형이 좋습니다.
+
+### PC 사양별 권장값
+
+아래는 시작점을 정하기 위한 범위입니다. 실제 속도는 CPU, 저장장치, Ollama 설정에 따라 달라집니다.
+
+| PC 범위 | 예시 | 시작 모델 | 권장 설정 |
+| --- | --- | --- | --- |
+| CPU 전용·입문 | RAM 16GB, GPU 없음 | `qwen2.5-coder:3b` | `max-files 6`, `max-chars 30000` |
+| 보급형 GPU | VRAM 6–8GB, RAM 16GB | `qwen2.5-coder:7b` | `max-files 10`, `max-chars 50000` |
+| 일반적인 추천 | VRAM 10–12GB, RAM 32GB | `qwen2.5-coder:7b` | 기본값 그대로 사용 |
+| 고사양 | VRAM 16GB 이상, RAM 32–64GB | `qwen2.5-coder:14b` 또는 최신 Ollama 권장 모델 | 모델별 컨텍스트 한도 확인 |
+
+입문 PC에서 모델을 바꾸려면 다음처럼 실행합니다.
+
+```powershell
+ollama pull qwen2.5-coder:3b
+.\Ask-LocalAssistant.ps1 -Question "설정 로딩 흐름을 찾아줘" -Path C:\path\to\project -Model qwen2.5-coder:3b -MaxFiles 6 -Copy
+```
+
+고사양 PC에서 14B 모델을 쓰려면 먼저 모델을 받고 같은 방식으로 `-Model qwen2.5-coder:14b`를 지정합니다. 느리거나 메모리가 부족하면 7B로 돌아오면 됩니다.
 
 ## 기본 사용법
 
