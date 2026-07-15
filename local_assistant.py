@@ -61,18 +61,20 @@ class Candidate:
 
 
 def estimate_tokens(text: str) -> int:
-    # A deliberately simple cross-language estimate for relative comparisons.
+    """Estimate tokens cheaply; this is for before/after comparison, not billing."""
     ascii_count = sum(1 for char in text if ord(char) < 128)
     non_ascii_count = len(text) - ascii_count
     return max(1, round(ascii_count / 4 + non_ascii_count / 1.5))
 
 
 def query_terms(question: str) -> list[str]:
+    """Turn a natural-language question into searchable words and remove filler words."""
     terms = re.findall(r"[A-Za-z_][A-Za-z0-9_]{2,}|[가-힣]{2,}", question.lower())
     return list(dict.fromkeys(term for term in terms if term not in STOP_WORDS))
 
 
 def is_text_file(path: Path) -> bool:
+    """Allow source-like text while keeping credentials, keys, and local secrets out."""
     name = path.name.lower()
     if name in SENSITIVE_FILENAMES or name.endswith((".pem", ".key", ".pfx", ".p12")):
         return False
@@ -92,6 +94,7 @@ def read_text(path: Path, max_file_bytes: int) -> str | None:
 
 
 def score_file(relative: str, text: str, terms: list[str]) -> int:
+    """Rank filename/path matches above ordinary content matches."""
     if not terms:
         return 1
     path_lower = relative.lower()
@@ -132,6 +135,11 @@ def select_candidates(
     max_chars_per_file: int,
     max_file_bytes: int,
 ) -> tuple[list[Candidate], int, int]:
+    """Scan once, rank matches, then reserve room for code, tests, docs, and config.
+
+    The per-file limit prevents one large README or design document from consuming
+    the entire prompt budget before implementation files can be included.
+    """
     terms = query_terms(question)
     candidates: list[Candidate] = []
     scanned_tokens = 0
@@ -155,6 +163,8 @@ def select_candidates(
                 candidates.append(Candidate(path, relative, text, score))
 
     candidates.sort(key=lambda item: (-item.score, len(item.relative), item.relative.lower()))
+    # Seed each category with its best match so a useful answer has both context
+    # and implementation evidence when the repository contains those categories.
     diversified: list[Candidate] = []
     for category in ("code", "tests", "docs", "config"):
         first = next((item for item in candidates if candidate_category(item) == category), None)
@@ -178,6 +188,7 @@ def select_candidates(
 
 
 def ollama_request(endpoint: str, payload: dict, timeout: int = 600) -> dict:
+    """Call Ollama's local HTTP API; no cloud API key or external upload is used."""
     request = urllib.request.Request(
         f"http://127.0.0.1:11434{endpoint}",
         data=json.dumps(payload).encode("utf-8"),
@@ -201,6 +212,7 @@ def build_source_context(selected: list[Candidate]) -> str:
 
 
 def deterministic_pack(question: str, selected: list[Candidate]) -> str:
+    """Create a no-model fallback so file discovery still works offline."""
     lines = [
         "# Local AI Context Pack",
         "",
@@ -230,6 +242,7 @@ def deterministic_pack(question: str, selected: list[Candidate]) -> str:
 
 
 def model_pack(question: str, selected: list[Candidate], model: str) -> str:
+    """Ask the local model for a short, evidence-based handoff summary."""
     source_context = build_source_context(selected)
     prompt = f"""You compress repository evidence for a senior coding agent.
 
@@ -265,6 +278,8 @@ def resolve_output(root: Path, output: str) -> Path:
 
 
 def load_config(root: Path) -> dict:
+    # Configuration belongs to the target project, so each project can tune its
+    # own limits without changing this tool or the user's global environment.
     path = root / ".localassistant.json"
     if not path.is_file():
         return {}
@@ -283,6 +298,7 @@ def setting(args: argparse.Namespace, config: dict, name: str):
 
 
 def cache_key(question: str, model: str, selected: list[Candidate]) -> str:
+    """Invalidate cached summaries whenever the question, model, or source changes."""
     digest = hashlib.sha256()
     digest.update(b"local-assistant-v3\0")
     digest.update(model.encode("utf-8"))
@@ -297,6 +313,7 @@ def cache_key(question: str, model: str, selected: list[Candidate]) -> str:
 
 
 def copy_to_clipboard(text: str) -> None:
+    """Copy Unicode safely on Windows; this avoids Korean console code-page issues."""
     if os.name == "nt":
         # CF_UNICODETEXT through Win32 avoids console code-page corruption.
         cf_unicode_text = 13
