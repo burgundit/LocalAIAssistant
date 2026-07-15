@@ -2,6 +2,8 @@
 
 이 문서는 Windows 초보자가 **Lumi(루미)**를 설치하고 Codex 또는 Claude Code와 함께 사용하는 순서입니다. GitHub 저장소 이름은 검색을 위해 `LocalAIAssistant`로 유지됩니다.
 
+LUMI는 **Local Understanding & Model Interface**의 약자입니다. 로컬에서 프로젝트를 읽고 필요한 정보만 Codex와 Claude Code에 연결합니다.
+
 ## 1. 공통 준비
 
 PowerShell을 새로 열고 다음 명령으로 준비 상태를 확인합니다.
@@ -25,7 +27,7 @@ ollama pull qwen2.5-coder:7b
 ollama list
 ```
 
-## 2. LocalAIAssistant 설치
+## 2. Lumi 설치
 
 ```powershell
 git clone https://github.com/burgundit/LocalAIAssistant.git
@@ -106,7 +108,7 @@ cd C:\path\to\your-project
 claude
 ```
 
-LocalAIAssistant로 팩을 만든 뒤 Claude Code에 붙여 넣는 과정은 Codex와 같습니다.
+Lumi로 팩을 만든 뒤 Claude Code에 붙여 넣는 과정은 Codex와 같습니다.
 
 ### Claude Code 자동 연동 (MCP 서버, 권장)
 
