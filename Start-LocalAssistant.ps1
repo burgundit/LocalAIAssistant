@@ -13,7 +13,7 @@ if ($Doctor) {
     exit $LASTEXITCODE
 }
 
-Write-Host 'LocalAIAssistant 준비 완료.'
+Write-Host 'Lumi (루미) 준비 완료.'
 Write-Host "모델: $Model"
 Write-Host '사용 예:'
 Write-Host '.\Ask-LocalAssistant.ps1 -Question "질문" -Path C:\path\to\project'

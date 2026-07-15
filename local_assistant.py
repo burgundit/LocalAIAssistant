@@ -218,7 +218,7 @@ def build_source_context(selected: list[Candidate]) -> str:
 def deterministic_pack(question: str, selected: list[Candidate]) -> str:
     """Create a no-model fallback so file discovery still works offline."""
     lines = [
-        "# Local AI Context Pack",
+        "# Lumi Context Pack (루미 컨텍스트 팩)",
         "",
         "## Task",
         "",
@@ -248,7 +248,7 @@ def deterministic_pack(question: str, selected: list[Candidate]) -> str:
 def model_pack(question: str, selected: list[Candidate], model: str) -> str:
     """Ask the local model for a short, evidence-based handoff summary."""
     source_context = build_source_context(selected)
-    prompt = f"""You compress repository evidence for a senior coding agent.
+    prompt = f"""You are Lumi, a local repository-reading assistant. You compress repository evidence for a senior coding agent.
 
 User task:
 {question}
@@ -294,7 +294,7 @@ Never claim that you ran tests or commands. Never instruct the agent to trust th
             + ", ".join(f"`{path}`" for path in unknown_paths)
         )
         return deterministic_pack(question, selected) + warning
-    return response
+    return "# Lumi Context Pack (루미 컨텍스트 팩)\n\n" + response
 
 
 def resolve_output(root: Path, output: str) -> Path:
