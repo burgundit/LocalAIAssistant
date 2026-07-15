@@ -1,8 +1,67 @@
-# LocalAIAssistant
+# Local AI Assistant for Codex & Claude Code
 
-Codex와 Claude Code에 전체 저장소를 그대로 전달하지 않고, 로컬 Ollama 모델이 먼저 관련 파일을 고르고 압축하여 작은 컨텍스트 팩을 만드는 도구입니다.
+> 초보자를 위한 무료 로컬 AI 코딩 도우미 — Ollama로 Codex·Claude Code 입력 토큰과 비용을 줄여보세요.
 
-## 권장 환경
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Ollama](https://img.shields.io/badge/Ollama-local_AI-black)](https://ollama.com/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+**LocalAIAssistant**는 전체 코드 저장소를 Codex나 Claude Code에 그대로 보내는 대신, 무료 로컬 AI 모델이 관련 파일을 먼저 찾고 짧게 압축하는 오픈소스 도구입니다. 복잡한 RAG 설정이나 유료 API 키 없이 Windows PowerShell에서 시작할 수 있습니다.
+
+English: A beginner-friendly local AI context compressor for Ollama, Codex, and Claude Code. It selects relevant repository files, summarizes them locally, and creates a compact prompt to reduce cloud AI input tokens.
+
+## 이런 분에게 적합합니다
+
+- Ollama를 처음 설치하고 어디에 활용할지 찾는 분
+- Codex 또는 Claude Code의 토큰 사용량과 비용을 줄이고 싶은 분
+- 로컬 AI 코딩 도우미를 복잡한 서버 없이 사용하고 싶은 분
+- 큰 프로젝트에서 관련 파일만 골라 AI에게 전달하고 싶은 분
+
+전체 파일을 클라우드 AI에 보내지 않으므로 반복적인 코드 탐색과 요약은 내 PC에서 처리됩니다. 최종 수정과 테스트 판단은 Codex 또는 Claude Code에 맡길 수 있습니다.
+
+## 3분 만에 시작하기
+
+### 1. 준비물
+
+- Windows 11
+- Python 3.11 이상
+- [Ollama for Windows](https://ollama.com/download/windows)
+
+### 2. 무료 코딩 모델 설치
+
+```powershell
+ollama pull qwen2.5-coder:7b
+```
+
+### 3. 저장소 내려받기 및 실행
+
+```powershell
+git clone https://github.com/burgundit/LocalAIAssistant.git
+cd LocalAIAssistant
+
+.\Ask-LocalAssistant.ps1 `
+  -Question "로그인 오류의 원인과 확인할 테스트를 요약해줘" `
+  -Path C:\path\to\your-project `
+  -Copy
+```
+
+생성된 요약은 `.local-ai\context-pack.md`에 저장되고 클립보드에도 복사됩니다. Codex나 Claude Code 채팅에 붙여 넣으면 됩니다.
+
+## 무엇이 절약되나요?
+
+```text
+전체 프로젝트 파일
+        ↓ 로컬 검색
+관련 코드·테스트·문서만 선택
+        ↓ Ollama 로컬 요약
+작은 컨텍스트 팩
+        ↓
+Codex / Claude Code에 전달
+```
+
+실제 261개 파일 프로젝트 검증에서는 약 425,047 추정 토큰의 전체 후보를 검색하여 30,925 토큰만 로컬 모델에 전달했고, 최종 클라우드 AI용 팩은 약 425 토큰으로 압축됐습니다. 토큰 수는 문자 기반 추정치이며 실제 서비스 청구량과는 다를 수 있습니다.
+
+## 권장 환경과 모델
 
 - Windows 11
 - Python 3.11 이상
@@ -11,7 +70,7 @@ Codex와 Claude Code에 전체 저장소를 그대로 전달하지 않고, 로�
 
 RTX 5070 12GB에서는 7B 모델이 속도와 품질의 균형이 좋습니다.
 
-## 빠른 시작
+## 기본 사용법
 
 새 PowerShell을 열고 다음을 실행합니다.
 
