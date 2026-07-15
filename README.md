@@ -47,6 +47,8 @@ cd LocalAIAssistant
 
 생성된 요약은 `.local-ai\context-pack.md`에 저장되고 클립보드에도 복사됩니다. Codex나 Claude Code 채팅에 붙여 넣으면 됩니다.
 
+처음이라면 `-Question`에는 “무엇을 알고 싶은지”를 자연스럽게 적으면 됩니다. 예를 들어 `로그인 오류의 원인과 관련 테스트를 찾아줘`처럼 작성할 수 있습니다. 도구가 파일을 수정하거나 명령을 실행하지는 않습니다.
+
 ## 무엇이 절약되나요?
 
 ```text
@@ -99,6 +101,14 @@ ollama pull qwen2.5-coder:7b
 기본 입력 예산은 총 80,000자, 파일당 20,000자로 제한됩니다. 32K 컨텍스트 모델에 프롬프트와 출력 여유를 남기면서 큰 문서 하나가 예산을 독점하지 않게 합니다.
 
 `.env`, 자격 증명 JSON, 로컬 설정, 개인키·인증서 파일은 기본적으로 읽지 않습니다.
+
+### 파일별 역할
+
+- `local_assistant.py`: 파일 검색, 관련도 계산, Ollama 호출, 요약·캐시 생성
+- `Ask-LocalAssistant.ps1`: 초보자가 PowerShell에서 질문을 입력하는 실행 래퍼
+- `Start-LocalAssistant.ps1`: Python·Ollama 연결과 모델 설치 상태 점검
+- `.localassistant.example.json`: 프로젝트별 파일 수·컨텍스트 크기 설정 예시
+- `test_local_assistant.py`: 검색, 보안 제외, 캐시 키 등 핵심 동작 테스트
 
 ## 명령 예시
 
