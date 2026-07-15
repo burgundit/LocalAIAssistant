@@ -403,6 +403,92 @@ def command_doctor(args: argparse.Namespace) -> int:
     return 0
 
 
+@dataclass
+class Pack:
+    content: str
+    output_path: Path
+    selected: list[Candidate]
+    scanned_files: int
+    scanned_tokens: int
+    input_tokens: int
+    output_tokens: int
+    saving: float
+    used_model: bool
+    model: str
+    cache_hit: bool
+
+
+def generate_pack(
+    root: Path,
+    question: str,
+    model: str,
+    output: str,
+    max_files: int,
+    max_chars: int,
+    max_chars_per_file: int,
+    max_file_bytes: int,
+    no_model: bool,
+    no_cache: bool,
+) -> Pack:
+    """Build a context pack; shared by the CLI and the MCP server so both stay in sync."""
+    selected, scanned_files, scanned_tokens = select_candidates(
+        root, question, max_files, max_chars, max_chars_per_file, max_file_bytes
+    )
+    if not selected:
+        raise LookupError("질문과 관련된 텍스트 파일을 찾지 못했습니다.")
+
+    source_context = build_source_context(selected)
+    used_model = not no_model
+    output_path = resolve_output(root, output)
+    key = cache_key(question, model, selected)
+    cache_path = output_path.parent / "cache" / f"{key}.md"
+    cache_hit = used_model and not no_cache and cache_path.is_file()
+    if cache_hit:
+        content = cache_path.read_text(encoding="utf-8")
+    elif used_model:
+        content = model_pack(question, selected, model)
+        if not no_cache:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cache_path.write_text(content, encoding="utf-8")
+    else:
+        content = deterministic_pack(question, selected)
+
+    input_tokens = estimate_tokens(source_context)
+    output_tokens = estimate_tokens(content)
+    saving = max(0.0, (1 - output_tokens / input_tokens) * 100) if input_tokens else 0.0
+    evidence_index = "\n".join(f"- `{item.relative}` (relevance {item.score})" for item in selected)
+    metadata = (
+        "\n\n---\n"
+        "## Evidence index\n\n"
+        f"{evidence_index}\n\n"
+        "## Context pack metrics\n\n"
+        f"- Root: `{root}`\n"
+        f"- Scanned: {scanned_files} files / ~{scanned_tokens:,} estimated tokens\n"
+        f"- Selected: {len(selected)} files / ~{input_tokens:,} estimated tokens\n"
+        f"- Pack: ~{output_tokens:,} estimated tokens\n"
+        f"- Local compression saving: ~{saving:.1f}%\n"
+        f"- Model: `{model if used_model else 'none (deterministic excerpts)'}`\n"
+        f"- Cache: `{'hit' if cache_hit else 'miss' if used_model and not no_cache else 'disabled'}`\n"
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    final_content = content + metadata
+    output_path.write_text(final_content, encoding="utf-8")
+
+    return Pack(
+        content=final_content,
+        output_path=output_path,
+        selected=selected,
+        scanned_files=scanned_files,
+        scanned_tokens=scanned_tokens,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        saving=saving,
+        used_model=used_model,
+        model=model,
+        cache_hit=cache_hit,
+    )
+
+
 def command_pack(args: argparse.Namespace) -> int:
     root = Path(args.path).expanduser().resolve()
     if not root.is_dir():
@@ -424,71 +510,34 @@ def command_pack(args: argparse.Namespace) -> int:
         print("파일 및 크기 제한은 0보다 커야 합니다.", file=sys.stderr)
         return 2
 
-    selected, scanned_files, scanned_tokens = select_candidates(
-        root, args.question, max_files, max_chars, max_chars_per_file, max_file_bytes
-    )
-    if not selected:
-        print("질문과 관련된 텍스트 파일을 찾지 못했습니다.", file=sys.stderr)
-        return 3
-
-    source_context = build_source_context(selected)
-    used_model = not args.no_model
-    output_path = resolve_output(root, output)
-    key = cache_key(args.question, model, selected)
-    cache_path = output_path.parent / "cache" / f"{key}.md"
-    cache_hit = used_model and not args.no_cache and cache_path.is_file()
     try:
-        if cache_hit:
-            content = cache_path.read_text(encoding="utf-8")
-        elif used_model:
-            content = model_pack(args.question, selected, model)
-            if not args.no_cache:
-                cache_path.parent.mkdir(parents=True, exist_ok=True)
-                cache_path.write_text(content, encoding="utf-8")
-        else:
-            content = deterministic_pack(args.question, selected)
+        pack = generate_pack(
+            root, args.question, model, output, max_files, max_chars,
+            max_chars_per_file, max_file_bytes, args.no_model, args.no_cache,
+        )
+    except LookupError as error:
+        print(str(error), file=sys.stderr)
+        return 3
     except (OSError, KeyError, urllib.error.URLError, json.JSONDecodeError) as error:
         print(f"Ollama 호출 실패: {error}", file=sys.stderr)
         print("--no-model 옵션으로 파일 선별만 실행할 수 있습니다.", file=sys.stderr)
         return 4
 
-
-    input_tokens = estimate_tokens(source_context)
-    output_tokens = estimate_tokens(content)
-    saving = max(0.0, (1 - output_tokens / input_tokens) * 100) if input_tokens else 0.0
-    evidence_index = "\n".join(f"- `{item.relative}` (relevance {item.score})" for item in selected)
-    metadata = (
-        "\n\n---\n"
-        "## Evidence index\n\n"
-        f"{evidence_index}\n\n"
-        "## Context pack metrics\n\n"
-        f"- Root: `{root}`\n"
-        f"- Scanned: {scanned_files} files / ~{scanned_tokens:,} estimated tokens\n"
-        f"- Selected: {len(selected)} files / ~{input_tokens:,} estimated tokens\n"
-        f"- Pack: ~{output_tokens:,} estimated tokens\n"
-        f"- Local compression saving: ~{saving:.1f}%\n"
-        f"- Model: `{model if used_model else 'none (deterministic excerpts)'}`\n"
-        f"- Cache: `{'hit' if cache_hit else 'miss' if used_model and not args.no_cache else 'disabled'}`\n"
-    )
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    final_content = content + metadata
-    output_path.write_text(final_content, encoding="utf-8")
-
     if args.copy:
         try:
-            copy_to_clipboard(final_content)
+            copy_to_clipboard(pack.content)
         except OSError as error:
             print(f"컨텍스트 팩은 생성했지만 클립보드 복사에 실패했습니다: {error}", file=sys.stderr)
             return 5
 
-    print(f"컨텍스트 팩 생성: {output_path}")
-    print(f"선별 입력: ~{input_tokens:,} tokens → 결과: ~{output_tokens:,} tokens ({saving:.1f}% 절감)")
+    print(f"컨텍스트 팩 생성: {pack.output_path}")
+    print(f"선별 입력: ~{pack.input_tokens:,} tokens → 결과: ~{pack.output_tokens:,} tokens ({pack.saving:.1f}% 절감)")
     if args.copy:
         print("컨텍스트 팩을 클립보드에 복사했습니다.")
-    if cache_hit:
+    if pack.cache_hit:
         print("동일한 입력의 로컬 모델 캐시를 재사용했습니다.")
     print("선택 파일:")
-    for item in selected:
+    for item in pack.selected:
         print(f"  {item.score:>3}  {item.relative}")
     return 0
 
