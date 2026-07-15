@@ -27,7 +27,7 @@ ollama pull qwen2.5-coder:7b
 ollama list
 ```
 
-## 2. LocalAIAssistant 설치
+## 2. Lumi 설치
 
 ```powershell
 git clone https://github.com/burgundit/LocalAIAssistant.git
@@ -108,7 +108,7 @@ cd C:\path\to\your-project
 claude
 ```
 
-LocalAIAssistant로 팩을 만든 뒤 Claude Code에 붙여 넣는 과정은 Codex와 같습니다.
+Lumi로 팩을 만든 뒤 Claude Code에 붙여 넣는 과정은 Codex와 같습니다.
 
 ### Claude Code 자동 연동 (MCP 서버, 권장)
 
