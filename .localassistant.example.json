@@ -1,0 +1,8 @@
+{
+  "model": "qwen2.5-coder:7b",
+  "output": ".local-ai/context-pack.md",
+  "max_files": 16,
+  "max_chars": 80000,
+  "max_chars_per_file": 20000,
+  "max_file_bytes": 300000
+}
