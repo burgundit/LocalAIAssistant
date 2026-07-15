@@ -10,6 +10,8 @@
 
 English: A beginner-friendly local AI context compressor for Ollama, Codex, and Claude Code. It selects relevant repository files, summarizes them locally, and creates a compact prompt to reduce cloud AI input tokens.
 
+설치와 Codex·Claude Code 연결을 처음부터 따라 하려면 [SETUP.md](SETUP.md)를 보세요.
+
 ## 이런 분에게 적합합니다
 
 - Ollama를 처음 설치하고 어디에 활용할지 찾는 분
